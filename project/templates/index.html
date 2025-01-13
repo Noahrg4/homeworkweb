@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Noah's Planner</title>
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css" rel="stylesheet">
+    <style>
+        /* General Styling */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #000;
+            color: #fff;
+            margin: 0;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1 {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 2.5em;
+            color: #FFD700;
+            text-shadow: 2px 2px 6px rgba(255, 215, 0, 0.8);
+        }
+
+        .container {
+            display: flex;
+            width: 100%;
+            flex-grow: 1;
+        }
+
+        /* Form Styling */
+        .form-container {
+            width: 20%;
+            padding: 20px;
+            background-color: #1a1a1a;
+            border-right: 2px solid #FFD700;
+            color: #fff;
+            box-shadow: 3px 0 10px rgba(0, 0, 0, 0.6);
+        }
+
+        .form-container h2 {
+            color: #FFD700;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+
+        .form-container form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-top: 15px;
+            font-weight: bold;
+            color: #FFD700;
+        }
+
+        input[type="text"], input[type="date"] {
+            margin-top: 5px;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #FFD700;
+            font-size: 1em;
+            color: #000;
+            background-color: #fff;
+        }
+
+        button {
+            margin-top: 20px;
+            background: linear-gradient(to right, #FFD700, #ffbf00);
+            color: #000;
+            border: none;
+            padding: 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        button:hover {
+            background: linear-gradient(to right, #ffbf00, #FFD700);
+            color: #fff;
+        }
+
+        /* Calendar Styling */
+        .calendar-container {
+            width: 60%;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        #calendar {
+            background: #fff;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+        }
+
+        .fc-toolbar {
+            justify-content: center;
+        }
+
+        .fc-toolbar-chunk {
+            margin: 0 5px;
+        }
+
+        .fc-button {
+            background: linear-gradient(to right, #FFD700, #ffbf00) !important;
+            color: #000 !important;
+            border: none !important;
+            border-radius: 5px !important;
+            padding: 8px 15px !important;
+        }
+
+        .fc-button:hover {
+            background: linear-gradient(to right, #ffbf00, #FFD700) !important;
+            color: #fff !important;
+        }
+
+        .fc-daygrid-day {
+            color: #000 !important;
+        }
+
+        /* Assignments List Styling */
+        .assignment-list {
+            width: 20%;
+            padding: 20px;
+            background-color: #1a1a1a;
+            border-left: 2px solid #FFD700;
+            box-shadow: -3px 0 10px rgba(0, 0, 0, 0.6);
+            overflow-y: auto;
+        }
+
+        .assignment-list h2 {
+            color: #FFD700;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+
+        .assignment {
+            background: #333;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border: 1px solid #FFD700;
+            color: #fff;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .assignment:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 10px rgba(255, 215, 0, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <h1>reglist</h1>
+    <div class="container">
+        <!-- Form Container -->
+        <div class="form-container">
+            <h2>Add Assignment</h2>
+            <form id="assignmentForm">
+                <label for="file_name">Assignment Name:</label>
+                <input type="text" id="file_name" name="file_name" required>
+                <label for="due_date">Due Date:</label>
+                <input type="date" id="due_date" name="due_date" required>
+                <button type="submit">Add Assignment</button>
+            </form>
+
+            <h2>Remove Assignment</h2>
+            <form id="removeAssignmentForm">
+                <label for="remove_file_name">Assignment Name:</label>
+                <input type="text" id="remove_file_name" name="file_name" required>
+                <button type="submit">Remove Assignment</button>
+            </form>
+        </div>
+
+        <!-- Calendar Container -->
+        <div class="calendar-container">
+            <div id="calendar"></div>
+        </div>
+
+        <!-- Assignments List Container -->
+        <div class="assignment-list">
+            <h2>Assignments</h2>
+            <div id="assignmentsDisplay">
+                <p>No assignments added yet.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const calendarEl = document.getElementById('calendar');
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                themeSystem: 'standard'
+            });
+            calendar.render();
+
+            const assignmentsDisplay = document.getElementById('assignmentsDisplay');
+
+            const fetchAssignments = async () => {
+                const response = await fetch('/get_assignments');
+                const assignments = await response.json();
+
+                assignmentsDisplay.innerHTML = '';
+                calendar.getEvents().forEach(event => event.remove());
+
+                if (assignments.length === 0) {
+                    assignmentsDisplay.innerHTML = '<p>No assignments added yet.</p>';
+                } else {
+                    assignments.forEach(assignment => {
+                        const assignmentItem = document.createElement('div');
+                        assignmentItem.className = 'assignment';
+                        assignmentItem.innerHTML = `
+                            <p><strong>Assignment:</strong> ${assignment.file_name}</p>
+                            <p><strong>Due Date:</strong> ${assignment.due_date}</p>
+                        `;
+                        assignmentsDisplay.appendChild(assignmentItem);
+
+                        calendar.addEvent({
+                            title: assignment.file_name,
+                            start: assignment.due_date
+                        });
+                    });
+                }
+            };
+
+            const assignmentForm = document.getElementById('assignmentForm');
+            assignmentForm.addEventListener('submit', async function (event) {
+                event.preventDefault();
+
+                const formData = new FormData(assignmentForm);
+                await fetch('/add_assignment', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                await fetchAssignments();
+                assignmentForm.reset();
+            });
+
+            const removeAssignmentForm = document.getElementById('removeAssignmentForm');
+            removeAssignmentForm.addEventListener('submit', async function (event) {
+                event.preventDefault();
+
+                const formData = new FormData(removeAssignmentForm);
+                await fetch('/delete_assignment', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                await fetchAssignments();
+                removeAssignmentForm.reset();
+            });
+
+            fetchAssignments();
+        });
+    </script>
+</body>
+</html>
